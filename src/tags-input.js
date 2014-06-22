@@ -11,14 +11,14 @@
  * @param {string} ngModel Assignable angular expression to data-bind to.
  * @param {string=} [displayProperty=text] Property to be rendered as the tag label.
  * @param {number=} tabindex Tab order of the control.
- * @param {string=} [placeholder=Add a tag] Placeholder text for the control.
+ * @param {string=} [placeholder=Add a tag] Placeholder text for the control; set to String.fromCharCode(00) for none
  * @param {number=} [minLength=3] Minimum length for a new tag.
  * @param {number=} maxLength Maximum length allowed for a new tag.
  * @param {number=} minTags Sets minTags validation error key if the number of tags added is less than minTags.
  * @param {number=} maxTags Sets maxTags validation error key if the number of tags added is greater than maxTags.
  * @param {boolean=} [allowLeftoverText=false] Sets leftoverText validation error key if there is any leftover text in
  *                                             the input element when the directive loses focus.
- * @param {string=} [removeTagSymbol=×] Symbol character for the remove tag button.
+ * @param {string=} [removeTagSymbol=×] Symbol character for the remove tag button; set to String.fromCharCode(00) for none
  * @param {boolean=} [addOnEnter=true] Flag indicating that a new tag will be added on pressing the ENTER key.
  * @param {boolean=} [addOnSpace=false] Flag indicating that a new tag will be added on pressing the SPACE key.
  * @param {boolean=} [addOnComma=true] Flag indicating that a new tag will be added on pressing the COMMA key.
@@ -33,6 +33,7 @@
  *                                                   allowLeftoverText values are ignored.
  * @param {expression} onTagAdded Expression to evaluate upon adding a new tag. The new tag is available as $tag.
  * @param {expression} onTagRemoved Expression to evaluate upon removing an existing tag. The removed tag is available as $tag.
+ * @param {boolean=} [allowInput=true] Flag indicating whether add/remove will work
  */
 tagsInput.directive('tagsInput', function($timeout, $document, tagsInputConfig) {
     function TagList(options, events) {
@@ -135,7 +136,8 @@ tagsInput.directive('tagsInput', function($timeout, $document, tagsInputConfig) 
                 maxTags: [Number],
                 displayProperty: [String, 'text'],
                 allowLeftoverText: [Boolean, false],
-                addFromAutocompleteOnly: [Boolean, false]
+                addFromAutocompleteOnly: [Boolean, false],
+                allowInput: [Boolean, true]
             });
 
             $scope.events = new SimplePubSub();
@@ -252,13 +254,13 @@ tagsInput.directive('tagsInput', function($timeout, $document, tagsInputConfig) 
                     shouldAdd = !options.addFromAutocompleteOnly && addKeys[key];
                     shouldRemove = !shouldAdd && key === KEYS.backspace && scope.newTag.text.length === 0;
 
-                    if (shouldAdd) {
+                   if (options.allowInput && shouldAdd) {
                         tagList.addText(scope.newTag.text);
 
                         scope.$apply();
                         e.preventDefault();
                     }
-                    else if (shouldRemove) {
+                    else if (options.allowInput && shouldRemove) {
                         var tag = tagList.removeLast();
                         if (tag && options.enableEditingLastTag) {
                             scope.newTag.text = tag[options.displayProperty];
